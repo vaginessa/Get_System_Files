@@ -3,15 +3,15 @@ on:
   workflow_dispatch:
     inputs:
       URL:
-        description: "下载地址（线刷包到tgz截止）"
+        description: "Download-Adresse（OTA tgz blabla）"
         required: true
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出仓库文件
+      - name: 检出仓库文件 # checkout repo
         uses: actions/checkout@v4.1.7
-      - name: 准备环境
+      - name: 准备环境 # Vorbereiten der Umgebung
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
           if [[ "$URL" == *"CNXM"* ]]; then
@@ -32,12 +32,12 @@ jobs:
           sudo chmod -R 777 "$GITHUB_WORKSPACE"/tools
         env:
           URL: ${{ inputs.URL }}
-      - name: 下载系统包
+      - name: 下载系统包 # Systempaket herunterladen
         run: |
           aria2c -x16 -j$(nproc) -U "Mozilla/5.0" -d "$GITHUB_WORKSPACE" "$URL"
         env:
           URL: ${{ inputs.URL }}
-      - name: 检测payload/br/线刷包
+      - name: 检测payload/br/线刷包 # Erkennung von payload/br/OTA
         run: |
           if [[ "$ZIP_NAME" == *"images"* ]]; then
             tar xvzf $ZIP_NAME -C "$GITHUB_WORKSPACE"
@@ -58,7 +58,7 @@ jobs:
         env:
           URL: ${{ inputs.URL }}
       - if: ${{ env.unpack == 'payload' }}
-        name: 解压payload
+        name: 解压payload # entpacke payload
         run: |
           source unpack.sh
           for i in $unpack_partiton; do
@@ -74,7 +74,7 @@ jobs:
           unpack_vendor_boot
           rm -rf "$GITHUB_WORKSPACE"/$device/payload.bin
       - if: ${{ env.unpack == 'br' }}
-        name: 解压br
+        name: 解压br # entpacke br
         run: |
           source unpack.sh
           for i in $unpack_partiton; do
@@ -90,7 +90,7 @@ jobs:
             rm -rf "$GITHUB_WORKSPACE"/$device/$i.img
           done
       - if: ${{ env.unpack == 'flash' }}
-        name: 解压线刷包
+        name: 解压线刷包 # unzip OTA
         run: |
           source unpack.sh
           "$GITHUB_WORKSPACE"/tools/simg2img "$GITHUB_WORKSPACE"/$device/images/super.img "$GITHUB_WORKSPACE"/$device/super.img
@@ -108,18 +108,18 @@ jobs:
           rm -rf "$GITHUB_WORKSPACE"/$device/super.img
           mv "$GITHUB_WORKSPACE"/$device/images/vendor_boot.img "$GITHUB_WORKSPACE"/$device/vendor_boot.img
           unpack_vendor_boot
-      - name: 提取指定文件
+      - name: 提取指定文件 # Extrahieren einer bestimmten Datei
         run: |
           source unpack.sh
           extract_files
-      - name: 打包
+      - name: 打包 # assemble release oder nach einem Doggy Bag fragen (in einem Restaurant)
         run: |
           mkdir -p "$GITHUB_WORKSPACE"/zip
           sudo chmod -R 777 "$GITHUB_WORKSPACE"/get_files
           7z a "$GITHUB_WORKSPACE"/zip/"$device"_get_files.zip "$GITHUB_WORKSPACE"/get_files/*
           mv "$GITHUB_WORKSPACE"/zip/"$device"_get_files.zip "$GITHUB_WORKSPACE"/zip/"$device"_"$version"_"$(date +"%Y-%m-%d_%H%M%S")".zip
           cd "$GITHUB_WORKSPACE"
-      - name: 上传到Github Release
+      - name: 上传到Github Release # upload release
         uses: ncipollo/release-action@main
         with:
           artifacts: ${{ github.workspace }}/zip/*
