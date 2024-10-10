@@ -4,12 +4,12 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2181
 
-# 适用于出厂安卓13的机型
-unpack_partiton="system odm system_ext product vendor mi_ext system_dlkm vendor_dlkm"
-# 适用于升级到安卓13的机型
+# Für Modelle mit Android 13 ab Werk
+# unpack_partiton="system odm system_ext product vendor mi_ext system_dlkm vendor_dlkm"
+# Für Modelle, die auf Android 13 aktualisiert wurden
 # unpack_partiton="system odm system_ext product vendor mi_ext"
-# 适用于没有官方安卓13的机型
-# unpack_partiton="system odm system_ext product vendor"
+# Für Modelle ohne offizielles Android 13-Upgrade
+unpack_partiton="system odm system_ext product vendor"
 
 get_files_config() {
   mkdir -p "$GITHUB_WORKSPACE"/get_files/config
@@ -28,7 +28,7 @@ get_system_files() {
   elif [ -d "$GITHUB_WORKSPACE"/"$device""$source" ]; then
     cp -r "$GITHUB_WORKSPACE"/"$device""$source" "$GITHUB_WORKSPACE"/get_files"$path"
   else
-    echo "$source 不存在"
+    echo "$source not existent"
   fi
 }
 
